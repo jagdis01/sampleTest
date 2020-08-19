@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form method="post" id="billform" rate-load-url="{% url 'ajax_load_rates' %}" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+	<div id="form_set">
+    {% for form in formset %}
+	    <table class='no_error'>
+            {{ form }}
+             <div id="replaceable-content" class="col-6">
+      			{% include 'product-list.html' %}
+    		</div>
+            
+        </table>
+    {% endfor %}
+</div>
+<input type="button" value="Add More" id="add_more">
+<div id="empty_form" style="display:none">
+    <table class='no_error'>
+        {{ formset.empty_form }}
+    </table>
+</div>
+    <button type="submit">Save</button>
+  </form>
+
+
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+    $(".common-product").change(function () {
+      var url = $("#billform").attr("rate-load-url");  // get the url of the `load_cities` view
+      var productId = $(this).val();  // get the selected country ID from the HTML input
+
+      $.ajax({                       // initialize an AJAX request
+        url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+        data: {
+          'pk': productId       // add the country id to the GET parameters
+        },
+        success: function (data) { 
+          $("#replaceable-content").html(data['html_from_view']);// `data` is the return of the `load_cities` view function
+          // $("#id_form-0-rate").html(data.rate);
+          // document.getElementById("id_form-0-rate").defaultValue = data.rate;  // replace the contents of the city input with the data that came from the server
+        }
+      });
+
+    });
+
+    $('#add_more').click(function() {
+		var form_idx = $('#id_form-TOTAL_FORMS').val();
+		$('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+		$('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+	});
+  </script>
+
+{% endblock %}
